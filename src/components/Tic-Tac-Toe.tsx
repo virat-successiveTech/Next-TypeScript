@@ -4,7 +4,6 @@ import React, { useState } from "react";
 
 const TicTacToeBasic: React.FC = () => {
   const [board, setBoard] = useState<(string | null)[]>(Array(9).fill(null));
-  const [player, setPlayer] = useState<"X" | "O">("X");
   const [winner, setWinner] = useState<string | null>(null);
 
   const wins = [
@@ -16,35 +15,46 @@ const TicTacToeBasic: React.FC = () => {
   const checkWinner = (board: (string | null)[]) => {
     for (let combo of wins) {
       const [a, b, c] = combo;
-      if (
-        board[a] &&
-        board[a] === board[b] &&
-        board[a] === board[c]
-      ) {
+      if (board[a] && board[a] === board[b] && board[a] === board[c]) {
         return board[a];
       }
     }
     return null;
   };
 
+  const computerMove = (newBoard: (string | null)[]) => {
+    const emptyIndices = newBoard.map((cell, i) => cell === null ? i : null).filter(i => i !== null) as number[];
+
+    if (emptyIndices.length === 0) return;
+
+    const index = emptyIndices[0];
+    newBoard[index] = "O";
+    const win = checkWinner(newBoard);
+    setBoard([...newBoard]);
+
+    if (win) {
+      setWinner(win);
+    }
+  };
+
   const handleClick = (index: number) => {
     if (board[index] || winner) return;
 
-    const newBoard = board.slice();
-    newBoard[index] = player;
-    setBoard(newBoard);
+    const newBoard = [...board];
+    newBoard[index] = "X";
 
-    const win = checkWinner(newBoard);
+    let win = checkWinner(newBoard);
     if (win) {
+      setBoard(newBoard);
       setWinner(win);
-    } else {
-      setPlayer(player === "X" ? "O" : "X");
+      return;
     }
+
+    computerMove(newBoard);
   };
 
   const reset = () => {
     setBoard(Array(9).fill(null));
-    setPlayer("X");
     setWinner(null);
   };
 
@@ -69,7 +79,8 @@ const TicTacToeBasic: React.FC = () => {
               fontSize: 24,
               border: "1px solid black",
               cursor: board[i] || winner ? "not-allowed" : "pointer",
-              backgroundColor: cell ? "light blue" : "blue",
+              backgroundColor: cell ? "#b3d9ff" : "#3399ff",
+              color: "black",
             }}
           >
             {cell}
@@ -80,7 +91,7 @@ const TicTacToeBasic: React.FC = () => {
       {winner ? (
         <p style={{ fontWeight: "bold" }}>Winner: {winner}</p>
       ) : (
-        <p>Current Player: {player}</p>
+        <p>Player: X (You)</p>
       )}
 
       <button
